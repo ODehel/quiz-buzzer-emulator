@@ -1,0 +1,278 @@
+<Window x:Class="QuizBuzzerEmulator.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:conv="clr-namespace:QuizBuzzerEmulator.Converters"
+        Title="Quiz Buzzer Emulator"
+        Width="800" Height="650"
+        MinWidth="700" MinHeight="550"
+        WindowStartupLocation="CenterScreen"
+        Background="#1a1a2e">
+
+    <Window.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVis"/>
+        <conv:StringToColorBrushConverter x:Key="StringToColorBrush"/>
+        <conv:ResultToColorConverter x:Key="ResultToColor"/>
+        <conv:GameStateToVisibilityConverter x:Key="GameStateToVis"/>
+
+        <!-- Button style -->
+        <Style x:Key="ActionButton" TargetType="Button">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Opacity" Value="0.4"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.85"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- MCQ choice button -->
+        <Style x:Key="ChoiceButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="MinWidth" Value="140"/>
+            <Setter Property="MinHeight" Value="50"/>
+            <Setter Property="Margin" Value="4"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="160"/>
+        </Grid.RowDefinitions>
+
+        <!-- Row 0: Header / Connection -->
+        <Border Grid.Row="0" Background="#16213e" CornerRadius="8" Padding="12" Margin="0,0,0,8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Connection indicator -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Ellipse Width="14" Height="14" Margin="0,0,8,0"
+                             Fill="{Binding ConnectionColor, Converter={StaticResource StringToColorBrush}}"/>
+                    <TextBlock Text="{Binding ConnectionStatus}" Foreground="White"
+                               FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    <TextBlock Text=" | " Foreground="#555" FontSize="14" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding GameState}" Foreground="#8892b0"
+                               FontSize="13" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Mode toggle -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
+                    <TextBlock Text="Mode:" Foreground="#8892b0" FontSize="12" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                    <Button Command="{Binding ToggleModeCommand}" Background="#0f3460"
+                            Style="{StaticResource ActionButton}" Padding="10,4">
+                        <TextBlock>
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Text" Value="MANUAL"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsAutoMode}" Value="True">
+                                            <Setter Property="Text" Value="AUTO"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Button>
+                </StackPanel>
+
+                <!-- Connect / Disconnect -->
+                <Button Grid.Column="2" Content="Connect" Command="{Binding ConnectCommand}"
+                        Background="#2ECC71" Style="{StaticResource ActionButton}" Margin="0,0,6,0"/>
+                <Button Grid.Column="3" Content="Disconnect" Command="{Binding DisconnectCommand}"
+                        Background="#E74C3C" Style="{StaticResource ActionButton}"/>
+            </Grid>
+        </Border>
+
+        <!-- Row 1: Score + Timer bar -->
+        <Border Grid.Row="1" Background="#16213e" CornerRadius="8" Padding="12" Margin="0,0,0,8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Score -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <TextBlock Text="Score: " Foreground="#8892b0" FontSize="18" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding Score}" Foreground="#F1C40F" FontSize="24"
+                               FontWeight="Bold" VerticalAlignment="Center"/>
+                    <TextBlock Foreground="#2ECC71" FontSize="14" VerticalAlignment="Center" Margin="10,0,0,0"
+                               Visibility="{Binding PointsEarned, Converter={StaticResource BoolToVis}}">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="+{0}">
+                                <Binding Path="PointsEarned"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
+
+                <!-- Timer -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <TextBlock Text="⏱ " Foreground="White" FontSize="20" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding TimeRemaining, StringFormat={}{0}s}" Foreground="White"
+                               FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Last result -->
+                <TextBlock Grid.Column="2" Text="{Binding LastResult}" FontSize="18" FontWeight="Bold"
+                           HorizontalAlignment="Right" VerticalAlignment="Center"
+                           Foreground="{Binding LastResult, Converter={StaticResource ResultToColor}}"/>
+            </Grid>
+        </Border>
+
+        <!-- Row 2: Main game area -->
+        <Border Grid.Row="2" Background="#16213e" CornerRadius="8" Padding="16" Margin="0,0,0,8">
+            <Grid>
+                <!-- Question title -->
+                <StackPanel VerticalAlignment="Top">
+                    <TextBlock Foreground="#8892b0" FontSize="12" Margin="0,0,0,4">
+                        <Run Text="Question "/>
+                        <Run Text="{Binding QuestionIndex, Mode=OneWay}"/>
+                        <Run Text=" — "/>
+                        <Run Text="{Binding QuestionType, Mode=OneWay}"/>
+                    </TextBlock>
+                    <TextBlock Text="{Binding QuestionTitle}" Foreground="White" FontSize="20"
+                               FontWeight="SemiBold" TextWrapping="Wrap"/>
+
+                    <!-- Correct answer (after result) -->
+                    <TextBlock Margin="0,8,0,0" FontSize="14" Foreground="#8892b0"
+                               Visibility="{Binding GameState, Converter={StaticResource GameStateToVis}, ConverterParameter=RESULT}">
+                        <Run Text="Correct answer: "/>
+                        <Run Text="{Binding CorrectAnswer, Mode=OneWay}" Foreground="#2ECC71" FontWeight="Bold"/>
+                    </TextBlock>
+                </StackPanel>
+
+                <!-- SPEED Buzz button (centered) -->
+                <Button VerticalAlignment="Center" HorizontalAlignment="Center"
+                        Command="{Binding BuzzCommand}"
+                        Visibility="{Binding IsBuzzEnabled, Converter={StaticResource BoolToVis}}"
+                        Width="200" Height="200"
+                        Background="#E74C3C"
+                        Cursor="Hand" BorderThickness="0">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="buzzBorder" CornerRadius="100"
+                                    Background="{TemplateBinding Background}">
+                                <TextBlock Text="BUZZ!" FontSize="36" FontWeight="Bold"
+                                           Foreground="White" HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter TargetName="buzzBorder" Property="Opacity" Value="0.3"/>
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="buzzBorder" Property="Background" Value="#C0392B"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+
+                <!-- Buzzed status -->
+                <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center"
+                           Visibility="{Binding GameState, Converter={StaticResource GameStateToVis}, ConverterParameter=BUZZED}"
+                           Text="BUZZED! Waiting..." FontSize="28" FontWeight="Bold"
+                           Foreground="#F39C12"/>
+
+                <!-- Eliminated status -->
+                <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center"
+                           Visibility="{Binding GameState, Converter={StaticResource GameStateToVis}, ConverterParameter=ELIMINATED}"
+                           Text="ELIMINATED" FontSize="28" FontWeight="Bold"
+                           Foreground="#E74C3C"/>
+
+                <!-- Buzz locked status -->
+                <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center"
+                           Visibility="{Binding GameState, Converter={StaticResource GameStateToVis}, ConverterParameter=BUZZ_LOCKED}"
+                           Text="Waiting for other player..." FontSize="20"
+                           Foreground="#8892b0"/>
+            </Grid>
+        </Border>
+
+        <!-- Row 3: MCQ Choices -->
+        <Border Grid.Row="3" Background="#16213e" CornerRadius="8" Padding="8" Margin="0,0,0,8"
+                Visibility="{Binding IsAnswerEnabled, Converter={StaticResource BoolToVis}}">
+            <UniformGrid Rows="1" Columns="4">
+                <Button Style="{StaticResource ChoiceButton}" Background="#3498DB"
+                        Command="{Binding AnswerCommand}" CommandParameter="A">
+                    <StackPanel>
+                        <TextBlock Text="A" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock Text="{Binding ChoiceA}" FontSize="11" TextWrapping="Wrap"
+                                   HorizontalAlignment="Center" MaxWidth="130"/>
+                    </StackPanel>
+                </Button>
+                <Button Style="{StaticResource ChoiceButton}" Background="#E67E22"
+                        Command="{Binding AnswerCommand}" CommandParameter="B">
+                    <StackPanel>
+                        <TextBlock Text="B" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock Text="{Binding ChoiceB}" FontSize="11" TextWrapping="Wrap"
+                                   HorizontalAlignment="Center" MaxWidth="130"/>
+                    </StackPanel>
+                </Button>
+                <Button Style="{StaticResource ChoiceButton}" Background="#2ECC71"
+                        Command="{Binding AnswerCommand}" CommandParameter="C">
+                    <StackPanel>
+                        <TextBlock Text="C" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock Text="{Binding ChoiceC}" FontSize="11" TextWrapping="Wrap"
+                                   HorizontalAlignment="Center" MaxWidth="130"/>
+                    </StackPanel>
+                </Button>
+                <Button Style="{StaticResource ChoiceButton}" Background="#9B59B6"
+                        Command="{Binding AnswerCommand}" CommandParameter="D">
+                    <StackPanel>
+                        <TextBlock Text="D" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock Text="{Binding ChoiceD}" FontSize="11" TextWrapping="Wrap"
+                                   HorizontalAlignment="Center" MaxWidth="130"/>
+                    </StackPanel>
+                </Button>
+            </UniformGrid>
+        </Border>
+
+        <!-- Row 4: Logs -->
+        <Border Grid.Row="4" Background="#0f3460" CornerRadius="8" Padding="8">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Text="Logs" Foreground="#8892b0" FontSize="11"
+                           FontWeight="SemiBold" Margin="4,0,0,4"/>
+                <ListBox Grid.Row="1" x:Name="LogList"
+                         ItemsSource="{Binding Logs}"
+                         Background="Transparent" BorderThickness="0"
+                         Foreground="#8892b0" FontFamily="Consolas" FontSize="11"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
