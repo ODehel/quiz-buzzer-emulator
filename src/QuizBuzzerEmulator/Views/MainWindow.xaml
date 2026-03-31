@@ -57,6 +57,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="160"/>
@@ -111,8 +112,38 @@
             </Grid>
         </Border>
 
-        <!-- Row 1: Score + Timer bar -->
-        <Border Grid.Row="1" Background="#16213e" CornerRadius="8" Padding="12" Margin="0,0,0,8">
+        <!-- Row 1: Buzzer Credentials -->
+        <Border Grid.Row="1" Background="#16213e" CornerRadius="8" Padding="10,8" Margin="0,0,0,8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" Text="Nom:" Foreground="#8892b0" FontSize="13"
+                           VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <TextBox Grid.Column="1" Text="{Binding BuzzerUsername, UpdateSourceTrigger=PropertyChanged}"
+                         IsEnabled="{Binding IsNotConnected}"
+                         FontSize="13" Padding="6,4"
+                         Background="#0f3460" Foreground="White" BorderBrush="#2a4a7f"
+                         CaretBrush="White"/>
+
+                <TextBlock Grid.Column="3" Text="Mot de passe:" Foreground="#8892b0" FontSize="13"
+                           VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <PasswordBox Grid.Column="4"
+                             x:Name="PasswordField"
+                             IsEnabled="{Binding IsNotConnected}"
+                             FontSize="13" Padding="6,4"
+                             Background="#0f3460" Foreground="White" BorderBrush="#2a4a7f"
+                             CaretBrush="White"/>
+            </Grid>
+        </Border>
+
+        <!-- Row 2: Score + Timer bar -->
+        <Border Grid.Row="2" Background="#16213e" CornerRadius="8" Padding="12" Margin="0,0,0,8">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -149,8 +180,8 @@
             </Grid>
         </Border>
 
-        <!-- Row 2: Main game area -->
-        <Border Grid.Row="2" Background="#16213e" CornerRadius="8" Padding="16" Margin="0,0,0,8">
+        <!-- Row 3: Main game area -->
+        <Border Grid.Row="3" Background="#16213e" CornerRadius="8" Padding="16" Margin="0,0,0,8">
             <Grid>
                 <!-- Question title -->
                 <StackPanel VerticalAlignment="Top">
@@ -218,8 +249,8 @@
             </Grid>
         </Border>
 
-        <!-- Row 3: MCQ Choices -->
-        <Border Grid.Row="3" Background="#16213e" CornerRadius="8" Padding="8" Margin="0,0,0,8"
+        <!-- Row 4: MCQ Choices -->
+        <Border Grid.Row="4" Background="#16213e" CornerRadius="8" Padding="8" Margin="0,0,0,8"
                 Visibility="{Binding IsAnswerEnabled, Converter={StaticResource BoolToVis}}">
             <UniformGrid Rows="1" Columns="4">
                 <Button Style="{StaticResource ChoiceButton}" Background="#3498DB"
@@ -257,8 +288,8 @@
             </UniformGrid>
         </Border>
 
-        <!-- Row 4: Logs -->
-        <Border Grid.Row="4" Background="#0f3460" CornerRadius="8" Padding="8">
+        <!-- Row 5: Logs -->
+        <Border Grid.Row="5" Background="#0f3460" CornerRadius="8" Padding="8">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
