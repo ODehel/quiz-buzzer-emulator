@@ -290,6 +290,9 @@ public sealed class MainViewModel : BaseViewModel, IDisposable
             case "question_result":
                 HandleQuestionResult(element);
                 break;
+            case "game_resumed":
+                HandleGameResumed(element);
+                break;
             case "error":
                 HandleError(element);
                 break;
@@ -427,6 +430,15 @@ public sealed class MainViewModel : BaseViewModel, IDisposable
         AddLog(msg.Correct
             ? $"CORRECT! +{msg.PointsEarned} pts (total: {msg.CumulativeScore})"
             : $"INCORRECT. Answer was: {msg.CorrectAnswer} (total: {msg.CumulativeScore})");
+    }
+
+    private void HandleGameResumed(JsonElement el)
+    {
+        var msg = el.Deserialize<GameResumedMessage>()!;
+        Score = msg.CumulativeScore;
+        QuestionIndex = msg.QuestionIndex + 1;
+        GameState = msg.Status;
+        AddLog($"Game resumed — Question {QuestionIndex}, Score: {msg.CumulativeScore}, Status: {msg.Status}");
     }
 
     private void HandleError(JsonElement el)
