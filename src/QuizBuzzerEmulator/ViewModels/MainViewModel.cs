@@ -488,7 +488,7 @@ public sealed class MainViewModel : BaseViewModel, IDisposable
             Logs.RemoveAt(0);
     }
 
-    private void RunOnUI(Action action) => _dispatcher.Invoke(action);
+    private void RunOnUI(Action action) => _dispatcher.BeginInvoke(action);
 
     public void Dispose() => _wsService.Dispose();
 }
