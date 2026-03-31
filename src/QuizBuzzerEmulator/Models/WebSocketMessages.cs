@@ -132,6 +132,18 @@ public sealed class QuestionResultMessage : WsMessage
     public int CumulativeScore { get; set; }
 }
 
+public sealed class GameResumedMessage : WsMessage
+{
+    [JsonPropertyName("question_index")]
+    public int QuestionIndex { get; set; }
+
+    [JsonPropertyName("cumulative_score")]
+    public int CumulativeScore { get; set; }
+
+    [JsonPropertyName("status")]
+    public string Status { get; set; } = "";
+}
+
 public sealed class TimerEndMessage : WsMessage;
 
 public sealed class ErrorMessage : WsMessage
