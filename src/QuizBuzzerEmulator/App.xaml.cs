@@ -34,7 +34,7 @@ public partial class App : Application
         var wsService = new WebSocketService(hubSettings, emulatorSettings, authService);
 
         // Build ViewModel
-        var viewModel = new MainViewModel(wsService, emulatorSettings);
+        var viewModel = new MainViewModel(wsService, authService, buzzerSettings, emulatorSettings);
 
         // Show window
         var mainWindow = new MainWindow(viewModel);

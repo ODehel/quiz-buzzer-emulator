@@ -12,6 +12,10 @@ public partial class MainWindow : Window
         InitializeComponent();
         DataContext = viewModel;
 
+        // Sync PasswordBox with ViewModel (PasswordBox doesn't support binding)
+        PasswordField.Password = viewModel.BuzzerPassword;
+        PasswordField.PasswordChanged += (_, _) => viewModel.BuzzerPassword = PasswordField.Password;
+
         // Auto-scroll logs to bottom (deferred to avoid reentrancy during CollectionChanged)
         viewModel.Logs.CollectionChanged += (_, e) =>
         {

@@ -11,6 +11,8 @@ namespace QuizBuzzerEmulator.ViewModels;
 public sealed class MainViewModel : BaseViewModel, IDisposable
 {
     private readonly WebSocketService _wsService;
+    private readonly AuthenticationService _authService;
+    private readonly BuzzerSettings _buzzerSettings;
     private readonly EmulatorSettings _emulatorSettings;
     private readonly Dispatcher _dispatcher;
     private readonly Random _random = new();
@@ -31,6 +33,8 @@ public sealed class MainViewModel : BaseViewModel, IDisposable
     private bool _isBuzzed;
     private bool _isEliminated;
     private bool _isAutoMode;
+    private string _buzzerUsername = "";
+    private string _buzzerPassword = "";
     private string _choiceA = "";
     private string _choiceB = "";
     private string _choiceC = "";
@@ -38,12 +42,18 @@ public sealed class MainViewModel : BaseViewModel, IDisposable
 
     public MainViewModel(
         WebSocketService wsService,
+        AuthenticationService authService,
+        BuzzerSettings buzzerSettings,
         EmulatorSettings emulatorSettings)
     {
         _wsService = wsService;
+        _authService = authService;
+        _buzzerSettings = buzzerSettings;
         _emulatorSettings = emulatorSettings;
         _dispatcher = Application.Current.Dispatcher;
         _isAutoMode = emulatorSettings.IsAutoMode;
+        _buzzerUsername = buzzerSettings.Username;
+        _buzzerPassword = buzzerSettings.Password;
 
         ConnectCommand = new AsyncRelayCommand(ConnectAsync, () => _wsService.State == ConnectionState.Disconnected);
         DisconnectCommand = new AsyncRelayCommand(DisconnectAsync, () => _wsService.State == ConnectionState.Connected);
@@ -166,6 +176,20 @@ public sealed class MainViewModel : BaseViewModel, IDisposable
         private set => SetProperty(ref _isAutoMode, value);
     }
 
+    public string BuzzerUsername
+    {
+        get => _buzzerUsername;
+        set => SetProperty(ref _buzzerUsername, value);
+    }
+
+    public string BuzzerPassword
+    {
+        get => _buzzerPassword;
+        set => SetProperty(ref _buzzerPassword, value);
+    }
+
+    public bool IsNotConnected => _wsService.State == ConnectionState.Disconnected;
+
     public string ChoiceA
     {
         get => _choiceA;
@@ -202,6 +226,9 @@ public sealed class MainViewModel : BaseViewModel, IDisposable
 
     private async Task ConnectAsync()
     {
+        _buzzerSettings.Username = BuzzerUsername;
+        _buzzerSettings.Password = BuzzerPassword;
+        _authService.InvalidateToken();
         ResetGameState();
         await _wsService.ConnectAsync();
     }
@@ -456,6 +483,7 @@ public sealed class MainViewModel : BaseViewModel, IDisposable
 
         ((AsyncRelayCommand)ConnectCommand).RaiseCanExecuteChanged();
         ((AsyncRelayCommand)DisconnectCommand).RaiseCanExecuteChanged();
+        OnPropertyChanged(nameof(IsNotConnected));
     }
 
     private void ResetGameState()
